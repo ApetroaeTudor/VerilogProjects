@@ -22,6 +22,7 @@ In the simple_480p module the pixel position data is generated using internal co
 Two IP blocks are used: <br>
 1. PLL block which generates a 270MHZ serial clock signal (from a 27MHZ base), and also a divided 27MHZ pixel clock signal. These are used in TMDS encoding (for the 8b/10b algorithm).<br>
 2. DVI TX block, with ELVDS outputs for the color channels and the clock signal.<br>
+
 What i learned: <br>
 -> The fundamentals of the HDMI protocol, TMDS encoding and the benefits of data serialization/deserialization.<br>
 -> The difference between true LVDS and emulated LVDS. The FPGA board I used doesn't have true LVDS pins and instead the DVI TX block emulates this logic using general purpose pins instead.<br>
