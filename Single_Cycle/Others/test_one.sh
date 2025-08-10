@@ -1,0 +1,2 @@
+iverilog -o tst.out ./Button/Debounce.v ./Button/One_Period.v ./Button/Sync.v ./LED_Control/LED_Control.v ./Data_Path/ALU_Main.v ./Data_Path/Imm_32.v ./Data_Path/Mem_Data.v ./Data_Path/Mem_Instruction.v ./Data_Path/PC.v ./Data_Path/Reg_File.v ./Data_Path/Data_Path.v ./Control_Path/ALU_Control.v ./Control_Path/Control_Unit.v ./Control_Path/Control_Path.v ./Single_Cycle.v ./TOP.v ./Testbenches/Single_Cycle_Tb.v
+vvp tst.out

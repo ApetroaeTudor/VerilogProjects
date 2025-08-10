@@ -28,3 +28,43 @@ What i learned: <br>
 -> The difference between true LVDS and emulated LVDS. The FPGA board I used doesn't have true LVDS pins and instead the DVI TX block emulates this logic using general purpose pins instead.<br>
 -> How basic video output is generated, how color data is generated and sent to the display, what sync signals are.<br>
 
+## 4. RISC-V Single Cycle
+Single Cycle CPU: Executes each instruction in one clock cycle.<br>
+<br>
+Goal: Understanding the split between the Data Path and the control path.<br>
+<br>
+Key Characteristics:<br>
+-> ISA: RV32I<br>
+-> Separate data memory and instruction memory (Harvard Architecture)<br>
+![Block diagram](./Single_Cycle/Others/SingleCycle.png)
+<br>
+Execution Flow:<br>
+-> Fetch: Read instruction from memory at the address from PC<br>
+-> Decode: Identify opcode, source and destination registers, and the imm field<br>
+-> Execute: Perform ALU operation or compute branch addr<br>
+-> Memory Access: Load/Store data<br>
+-> Write Back: Store result to register file<br>
+-> Update PC<br>
+<br>
+Advantages:<br>
+-> Easy to design and understand<br>
+Disadvantages:<br>
+-> Cycle time = Slowest instruction (lw)<br>
+-> Not scalable for more complex cpu designs<br>
+<br>
+Supported instructions:<br>
+-> R type (add, sub, or, etc)<br>
+-> I type (lw, addi, jalr, etc)<br>
+-> S type (sw)<br>
+-> B type (jal)<br>
+<br>
+The design is tested using testbenches and simulations, and synthesized/implemented on a Sipeed Tang Nano 9k FPGA board.<br>
+For testing purposes, the code programmed into the instruction memory waits for 5 seconds and then turns a led off.<br>
+Initially, the cpu stays in a reset state, until an enable button is pressed. The button signal on the board is active low.<br>
+The button signal goes through 3 different modules, before being used in the TOP module. (Button Press -> Debounce -> Sync -> One Period).<br>
+The code increments the data at a specific memory location every 8 clock cycles.<br>
+<br>
+![Simulation for the Verilog code](./Single_Cycle/Others/Simulation_Waveform.png)
+<br>
+![Schematic general view](./Single_Cycle/Others/SchematicGeneralView.webp)
+<br>
