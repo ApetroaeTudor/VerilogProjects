@@ -91,7 +91,7 @@ The implementation of this 5 stage pipeline processing unit is based on the prev
 <br>
 The 5 stage pipeline structure is defined by the 4 stage-dividing registers, which store relevant data between clock cycles. In the diagram presented here, the data path is represented with black, and the various control signals that define the execution of certain instructions is represented with blue.<br>
 A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances.<br>
-**Some relevant hazards are:**
+**Some relevant hazards are:**<br>
 -> Data Hazards (Read after Write, register use immediately after lw)<br>
 -> Control Hazards (Not knowing whether a conditional branch is taken or not)<br>
 <br>
