@@ -71,14 +71,14 @@ The code increments the data at a specific memory location every 8 clock cycles.
 
 ## 5. RISC-V Pipeline 
 The implementation of this 5 stage pipeline processing unit is based on the previous single-cycle variant. Here the execution of the instruction is divided in 5 distinct stages, each one taking exactly one clock cycle.<br>
-The 5 stages are:<br>
+**The 5 stages are:**<br>
 -> Instruction Fetch (IF)<br>
 -> Instruction Decode (ID)<br>
 -> Instruction Execution (EX)<br>
 -> Memory access (M)<br>
 -> Write-Back (WB)<br>
 <br>
-Supported Instructions:<br>
+**Supported Instructions:**<br>
 -> R type: add,sub,or,and,slt<br>
 -> I type: addi, lw, jalr<br>
 -> J type: jal<br>
@@ -91,7 +91,7 @@ Supported Instructions:<br>
 <br>
 The 5 stage pipeline structure is defined by the 4 stage-dividing registers, which store relevant data between clock cycles. In the diagram presented here, the data path is represented with black, and the various control signals that define the execution of certain instructions is represented with blue.<br>
 A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances.<br>
-Some relevant hazards are:
+**Some relevant hazards are:**
 -> Data Hazards (Read after Write, register use immediately after lw)<br>
 -> Control Hazards (Not knowing whether a conditional branch is taken or not)<br>
 <br>
