@@ -96,5 +96,5 @@ A benefit of the pipelined architecture is that multiple instructions are execut
 
 ### Testing
 ![Testing waveform](./Pipeline/Others/waveform_1.png)
-The code loaded into the Instruction Memory covers arithmetic, logical, branch and memory instructions. There are cases that trigger data hazards and control hazards<br>
+The code loaded into the Instruction Memory covers arithmetic, logical, branch and memory instructions. There are cases that trigger data hazards and control hazards.<br>
 Testing was done using Icarus Verilog and Gtkwave in Visual Studio Code.<br>
