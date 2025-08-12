@@ -86,19 +86,15 @@ The implementation of this 5 stage pipeline processing unit is based on the prev
 -> B type: beq<br>
 
 ### Implementation Details
-<br>
 ![Implementation diagram](./Pipeline/Others/Pipeline.png)
-<br>
 The 5 stage pipeline structure is defined by the 4 stage-dividing registers, which store relevant data between clock cycles. In the diagram presented here, the data path is represented with black, and the various control signals that define the execution of certain instructions is represented with blue.<br>
-A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances.<br>
-**Some relevant hazards are:**<br>
+A benefit of the pipelined architecture is that multiple instructions are executed simultaneously. At the same time, hazards can occur, causing incorrect program execution. The Hazard Unit, based on information that is already present in the pipeline, can detect these occurances.
+**Some relevant hazards are:**
 -> Data Hazards (Read after Write, register use immediately after lw)<br>
 -> Control Hazards (Not knowing whether a conditional branch is taken or not)<br>
 <br>
 
 ### Testing
-<br>
 ![Testing waveform](./Pipeline/Others/waveform_1.png)
-<br>
 The code loaded into the Instruction Memory covers arithmetic, logical, branch and memory instructions. There are cases that trigger data hazards and control hazards<br>
 Testing was done using Icarus Verilog and Gtkwave in Visual Studio Code.<br>
