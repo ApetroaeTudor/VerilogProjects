@@ -1,3 +1,4 @@
+`include "Constants.vh"
 module PC(
     input i_clk,
     input i_clk_en,
@@ -8,6 +9,7 @@ module PC(
     output [31:0] o_do
 );
 
+
     reg [31:0] r_pc = 0;
     assign o_do = r_pc;
 
@@ -15,7 +17,7 @@ module PC(
     begin
         if(i_rst)
         begin
-            r_pc<=0;
+            r_pc<=`RESET_LO;
         end
         else if(i_clk_en)
         begin

@@ -7,6 +7,7 @@ module Hazard_Unit(
     input [4:0] i_rd_e,
     input [4:0] i_rd_m,
     input [4:0] i_rd_wb,
+    input i_jmp_e,
     input i_res_src_b0_e, // 1=>lw
     input [1:0] i_pc_src_e, // 01=> branch taken
 
@@ -48,7 +49,7 @@ module Hazard_Unit(
     assign o_pc_stall = w_lw_stall;
 
 
-    assign o_if_id_flush = (i_pc_src_e == 2'b01)?1'b1:1'b0;
+    assign o_if_id_flush = (i_pc_src_e == 2'b01 || i_jmp_e)?1'b1:1'b0;
     assign o_id_ex_flush = ((i_pc_src_e == 2'b01) || w_lw_stall )?1'b1:1'b0;
 
 

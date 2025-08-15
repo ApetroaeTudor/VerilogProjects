@@ -11,7 +11,7 @@ module Control_Path(
     output o_reg_write,
     output [2:0] o_alu_ctl,
     output o_alu_src,
-    output [1:0] o_imm_src
+    output [2:0] o_imm_src
 );
 
    

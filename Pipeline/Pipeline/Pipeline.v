@@ -32,16 +32,17 @@ module Pipeline(
     wire [4:0] w_rd_w;
     wire w_res_src_b0_e;
     wire [1:0] w_pc_src_e;
+    wire w_jmp_e;
 
 
     wire [1:0] w_result_src;
     wire w_branch;
-    wire w_jmp;
+    wire w_jmp_d;
     wire w_mem_write;
     wire w_reg_write;
     wire [2:0] w_alu_ctl;
     wire w_alu_src;
-    wire [1:0] w_imm_src;
+    wire [2:0] w_imm_src;
 
     wire [6:0] w_opcode;
     wire [2:0] w_f3;
@@ -64,12 +65,13 @@ module Pipeline(
                              .i_reg_write_d(w_reg_write),
                              .i_result_src_d(w_result_src),
                              .i_mem_write_d(w_mem_write),
-                             .i_jmp_d(w_jmp),
+                             .i_jmp_d(w_jmp_d),
                              .i_branch_d(w_branch),
                              .i_alu_ctl_d(w_alu_ctl),
                              .i_alu_src_d(w_alu_src),
                              .i_imm_src_d(w_imm_src),
                              
+                             .o_jmp_e(w_jmp_e),
                              .o_opcode_d(w_opcode),
                              .o_f3_d(w_f3),
                              .o_f7_b6_d(w_f7_b6),
@@ -92,7 +94,7 @@ module Pipeline(
                                    
                                    .o_result_src(w_result_src),
                                    .o_branch(w_branch),
-                                   .o_jmp(w_jmp),
+                                   .o_jmp(w_jmp_d),
                                    .o_mem_write(w_mem_write),
                                    .o_reg_write(w_reg_write),
                                    .o_alu_ctl(w_alu_ctl),
@@ -110,6 +112,7 @@ module Pipeline(
                                  .i_rd_wb(w_rd_w),
                                  .i_res_src_b0_e(w_res_src_b0_e),
                                  .i_pc_src_e(w_pc_src_e),
+                                 .i_jmp_e(w_jmp_e),
                                  
                                  .o_fw_a_e(w_fw_a_e),
                                  .o_fw_b_e(w_fw_b_e),

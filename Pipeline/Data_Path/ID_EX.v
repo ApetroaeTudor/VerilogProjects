@@ -22,6 +22,8 @@ module ID_EX(
     input i_alu_src_d,
 
     input [6:0] i_opcode_d,
+
+    input i_id_ex_flush_exception_m,
     
     output [4:0] o_rs1_e,
     output [4:0] o_rs2_e,
@@ -41,6 +43,7 @@ module ID_EX(
     output [6:0] o_opcode_e
 
 );
+
 
     reg [6:0] r_opcode_e;
     assign o_opcode_e = r_opcode_e;
@@ -89,7 +92,7 @@ module ID_EX(
 
     always@(posedge i_clk)
     begin
-        if(i_rst || i_id_ex_flush)
+        if(i_rst || i_id_ex_flush || i_id_ex_flush_exception_m)
         begin
             r_rs1_e <=0;
             r_rs2_e <=0;

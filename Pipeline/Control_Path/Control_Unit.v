@@ -1,3 +1,5 @@
+`include "Constants.vh"
+
 module Control_Unit(
     input [6:0] i_opcode,
 
@@ -8,18 +10,20 @@ module Control_Unit(
     output o_branch,
     output [1:0] o_alu_op,
     output o_alu_src,
-    output [1:0] o_imm_src
+    output [2:0] o_imm_src
 );
 
-    assign                    {o_result_src , o_mem_write , o_reg_write , o_jmp , o_branch , o_alu_op , o_alu_src , o_imm_src} = 
-    (i_opcode == 7'b011_0011)?{    2'b00    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b10  ,    1'b0   ,    2'bxx }: // r type
-    (i_opcode == 7'b000_0011)?{    2'b01    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b00  ,    1'b1   ,    2'b00 }: // i type (lw)
-    (i_opcode == 7'b001_0011)?{    2'b00    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b00  ,    1'b1   ,    2'b00 }: // i type (addi)
-    (i_opcode == 7'b110_0111)?{    2'b10    ,     1'b0    ,    1'b1     ,  1'b1 ,    1'b0  ,   2'b00  ,    1'b1   ,    2'b00 }: // i type (jalr)
-    (i_opcode == 7'b010_0011)?{    2'bxx    ,     1'b1    ,    1'b0     ,  1'b0 ,    1'b0  ,   2'b00  ,    1'b1   ,    2'b01 }: // s type (sw)
-    (i_opcode == 7'b110_1111)?{    2'b10    ,     1'b0    ,    1'b1     ,  1'b1 ,    1'b0  ,   2'bxx  ,    1'bx   ,    2'b11 }: // j type (jal)
-    (i_opcode == 7'b110_0011)?{    2'bxx    ,     1'b0    ,    1'b0     ,  1'b0 ,    1'b1  ,   2'b01  ,    1'b0   ,    2'b10 }: // b type (beq)
-    11'b0;
+
+    assign                        {o_result_src , o_mem_write , o_reg_write , o_jmp , o_branch , o_alu_op , o_alu_src , o_imm_src} = 
+    (i_opcode == `OP_R_TYPE)?     {    2'b00    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b10  ,    1'b0   ,    3'bxxx }: // r type
+    (i_opcode == `OP_I_TYPE_LW)?  {    2'b01    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b00  ,    1'b1   ,    3'b000 }: // i type (lw)
+    (i_opcode == `OP_I_TYPE_ADDI)?{    2'b00    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b00  ,    1'b1   ,    3'b000 }: // i type (addi)
+    (i_opcode == `OP_I_TYPE_JALR)?{    2'b10    ,     1'b0    ,    1'b1     ,  1'b1 ,    1'b0  ,   2'b00  ,    1'b1   ,    3'b000 }: // i type (jalr)
+    (i_opcode == `OP_S_TYPE)?     {    2'bxx    ,     1'b1    ,    1'b0     ,  1'b0 ,    1'b0  ,   2'b00  ,    1'b1   ,    3'b001 }: // s type (sw)
+    (i_opcode == `OP_J_TYPE)?     {    2'b10    ,     1'b0    ,    1'b1     ,  1'b1 ,    1'b0  ,   2'bxx  ,    1'bx   ,    3'b011 }: // j type (jal)
+    (i_opcode == `OP_B_TYPE_BEQ)? {    2'bxx    ,     1'b0    ,    1'b0     ,  1'b0 ,    1'b1  ,   2'b01  ,    1'b0   ,    3'b010 }: // b type (beq)
+    (i_opcode == `OP_U_TYPE)?     {    2'b00    ,     1'b0    ,    1'b1     ,  1'b0 ,    1'b0  ,   2'b11  ,    1'b1   ,    3'b100 }:
+    12'b0;
 
 
 

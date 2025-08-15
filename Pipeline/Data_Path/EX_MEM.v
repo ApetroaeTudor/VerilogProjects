@@ -12,6 +12,10 @@ module EX_MEM(
     input i_reg_wr_e,
     input [1:0] i_result_src_e,
     input i_mem_write_e,
+    input [3:0] i_exception_code_e,
+
+    output o_if_id_flush_exception_m,
+    output o_id_ex_flush_exception_m,
 
     output [4:0] o_rd_m,
     output [31:0] o_alu_out_m,
@@ -21,6 +25,17 @@ module EX_MEM(
     output [1:0] o_result_src_m,
     output o_mem_write_m
 );
+
+
+
+    // wire w_if_id_flush_exception_m;
+    // wire w_id_ex_flush_exception_m;
+
+    wire w_exception_ex_stage;
+    assign w_exception_ex_stage = ((i_exception_code_e!=4'b1111))?1'b1:1'b0;
+
+    assign o_if_id_flush_exception_m = w_exception_ex_stage;
+    assign o_id_ex_flush_exception_m = w_exception_ex_stage;
 
     reg [4:0] r_rd_e;
     assign o_rd_m = r_rd_e;
@@ -45,7 +60,7 @@ module EX_MEM(
 
     always@(posedge i_clk)
     begin
-        if(i_rst)
+        if(i_rst || w_exception_ex_stage )
         begin
             r_rd_e<=0;
             r_alu_out_e<=0;

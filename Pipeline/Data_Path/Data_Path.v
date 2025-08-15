@@ -1,3 +1,4 @@
+`include "Constants.vh"
 module Data_Path(
     input i_clk,
     input i_rst,
@@ -22,12 +23,13 @@ module Data_Path(
     input i_branch_d,
     input [2:0] i_alu_ctl_d,
     input i_alu_src_d,
-    input [1:0] i_imm_src_d, // outputs from Control Path
+    input [2:0] i_imm_src_d, // outputs from Control Path
     // -----------------------------------------
 
     output [6:0] o_opcode_d,
     output [2:0] o_f3_d,
     output o_f7_b6_d,
+    output o_jmp_e,
 
 
     output [4:0] o_rs1_d,
@@ -46,6 +48,11 @@ module Data_Path(
     wire [31:0] w_pc_in_f;
     wire [31:0] w_pc_out_f;
     wire [31:0] w_pc_p4_f;
+    wire w_tv_en_f;
+    wire w_rv_en_f;
+    wire w_txt_en_f;
+    wire [3:0] w_exception_code_f;
+    wire w_pc_trap_sel_f;
 
 
     wire [31:0] w_instr_d;
@@ -80,6 +87,8 @@ module Data_Path(
     wire w_zero_e;
     wire [6:0] w_opcode_e;
     wire [1:0] w_pc_src_e;
+    wire w_pc_trap_sel_e;
+    wire [3:0] w_exception_code_e;
 
 
     wire [31:0] w_alu_out_m;
@@ -90,6 +99,13 @@ module Data_Path(
     wire [1:0] w_result_src_m;
     wire w_mem_write_m;
     wire [31:0] w_mem_out_m;
+    wire [31:0] w_effective_addr_m;
+    wire w_glb_en_m;
+    wire w_stk_en_m;
+    wire w_io_en_m;
+    wire w_dm_en_m;
+    wire w_if_id_flush_exception_m;
+    wire w_id_ex_flush_exception_m;
 
 
 
@@ -101,10 +117,67 @@ module Data_Path(
     wire [31:0] w_pc_p4_w;
     wire [1:0] w_result_src_w;
 
+    reg[1:0] r_pc_state = `PC_RESET_V;
+
+
+
+    Exception_Signals_Handler Exception_Signals_Handler_Inst(
+        .i_pc_state(r_pc_state),
+        .i_pc_f(w_pc_in_f),
+        .i_opcode_f(w_instr_f[6:0]),
+        .i_res_src_e(w_result_src_e),
+        .i_reg_write_e(w_reg_write_e),
+        .i_rd_e(w_rd_e),
+        .i_alu_out_e(w_alu_out_e),
+        .i_mem_write_e(w_mem_write_e),
+        .o_exception_code_f(w_exception_code_f),
+        .o_exception_code_e(w_exception_code_e)
+    );
+
+
+    // wire w_pc_reset_op;
+    // reg r_pc_last_reset;
+    // assign w_pc_reset_op = ((r_pc_state == `PC_RESET_V) && (!r_pc_last_reset))?1:0;
+
+    // wire w_pc_trap_op;
+    // reg r_pc_last_trap;
+    // assign w_pc_reset_op = ((r_pc_state == `PC_TRAP_V) && (!r_pc_last_trap))?1:0;
+
+    // // idk daca astea sunt ok
+    // always@(posedge i_clk)
+    // begin
+    //     if(i_rst)
+    //     begin
+    //         r_pc_state<=`PC_RESET_V;
+    //         r_pc_last_reset<=1'b1;
+    //         r_pc_last_trap<=1'b0;
+    //     end
+    //     else if(i_clk_en)
+    //     begin
+    //         if(w_exception_code_f[3:0]!=3'b111)
+    //         begin
+    //             r_pc_state<=`PC_TRAP_V;
+    //             r_pc_last_reset<=1'b0;
+    //             r_pc_last_trap<=1'b1;
+    //         end
+    //         else
+    //         begin
+    //             r_pc_state<=`PC_TXT;
+    //             r_pc_last_reset<=1'b0;
+    //             r_pc_last_trap<=1'b0;
+    //         end
+    //     end
+    // end
+
+
 
     // IF ------------------------------------------------------------
 
-   
+    IF_Mem_Decoder IF_Mem_Decoder_Inst(.i_addr_f(w_pc_in_f),
+                                       .o_tv_en(w_tv_en_f),
+                                       .o_rv_en(w_rv_en_f),
+                                       .o_txt_en(w_txt_en_f));
+
     PC PC_Inst(.i_clk(i_clk),
                .i_clk_en(i_clk_en),
                .i_wr_en(i_pc_wr_en_h),
@@ -112,14 +185,17 @@ module Data_Path(
                .i_di(w_pc_in_f),
                .o_do(w_pc_out_f));
 
-
+    assign w_pc_trap_sel_f = (w_exception_code_f!=4'b1111)?1'b1:1'b0;
 
     assign w_pc_p4_f = w_pc_out_f + 32'd4;
 
 
-    assign w_pc_in_f = (w_pc_src_e == 2'b00)?w_pc_p4_f: // pcp4;
-                       (w_pc_src_e == 2'b01)?w_imm_32b_e: // imm
-                       (w_pc_src_e == 2'b10)?w_alu_out_e:32'b0; // rs1+imm
+    assign w_pc_in_f = 
+    (i_rst)?`RESET_LO:
+    (w_pc_trap_sel_f || w_pc_trap_sel_e)?`TRAP_LO:
+    (w_pc_src_e == 2'b00)?w_pc_p4_f: // pcp4;
+    (w_pc_src_e == 2'b01)?w_imm_32b_e: // imm
+    (w_pc_src_e == 2'b10)?w_alu_out_e:32'b0; // rs1+imm
 
 
     wire [31:0] w_instr_f;
@@ -139,6 +215,10 @@ module Data_Path(
                      .i_if_id_flush(i_if_id_flush_h),
                      .i_instr_f(w_instr_f),
                      .i_pc_p4_f(w_pc_p4_f),
+                     .i_if_id_flush_exception_m(w_if_id_flush_exception_m),
+
+                     .i_exception_code_f(w_exception_code_f),
+
                      .o_instr_d(w_instr_d),
                      .o_pc_p4_d(w_pc_p4_d));
 
@@ -194,6 +274,7 @@ module Data_Path(
                      .i_alu_ctl_d(i_alu_ctl_d),
                      .i_alu_src_d(i_alu_src_d),
                      .i_opcode_d(w_instr_d[6:0]),
+                     .i_id_ex_flush_exception_m(w_id_ex_flush_exception_m),
                      
                      .o_rs1_e(w_rs1_e),
                      .o_rs2_e(w_rs2_e),
@@ -220,6 +301,7 @@ module Data_Path(
     assign o_rs1_e = w_rs1_e;
     assign o_rs2_e = w_rs2_e;
     assign o_rd_e = w_rd_e;
+    assign o_jmp_e = w_jmp_e;
 
     assign w_haz_rs1_e = (i_fw_a_e==2'b01)?w_result_w:
                          (i_fw_a_e==2'b10)?w_alu_out_m:w_regs_do1_e;
@@ -232,6 +314,9 @@ module Data_Path(
     ((w_zero_e && w_branch_e) || (w_jmp_e && w_opcode_e == 7'b110_1111)) ? 2'b01:
     (w_jmp_e && w_opcode_e == 7'b110_0111)?2'b10:
     2'b00; 
+
+    assign w_pc_trap_sel_e =  (w_exception_code_e!=4'b1111)?1'b1:1'b0;
+
 
     ALU_Main ALU_Main_Inst(.i_op_a(w_haz_rs1_e),
                            .i_op_b(w_alu_op_b_e),
@@ -253,7 +338,10 @@ module Data_Path(
                        .i_reg_wr_e(w_reg_write_e),
                        .i_result_src_e(w_result_src_e),
                        .i_mem_write_e(w_mem_write_e),
+                       .i_exception_code_e(w_exception_code_e),
                        
+                       .o_if_id_flush_exception_m(w_if_id_flush_exception_m),
+                       .o_id_ex_flush_exception_m(w_id_ex_flush_exception_m),
                        .o_rd_m(w_rd_m),
                        .o_alu_out_m(w_alu_out_m),
                        .o_haz_b_m(w_haz_b_m),
@@ -264,11 +352,18 @@ module Data_Path(
 
     // MEM ------------------------------------------------------------
 
+    Mem_Calculation_Unit Mem_Calculation_Unit_Inst(.i_addr_m(w_alu_out_m),
+                                                   .o_effective_addr_m(w_effective_addr_m),
+                                                   .o_glb_en(w_glb_en_m),
+                                                   .o_stk_en(w_stk_en_m),
+                                                   .o_io_en(w_io_en_m),
+                                                   .o_dm_en(w_dm_en_m));
+
     Mem_Data Mem_Data_Inst(.i_clk(i_clk),
                            .i_clk_enable(i_clk_en),
                            .i_rst(i_rst),
                            .i_mem_write(w_mem_write_m),
-                           .i_mem_addr(w_alu_out_m),
+                           .i_mem_addr(w_effective_addr_m),
                            .i_mem_data(w_haz_b_m),
                            .o_mem_data(w_mem_out_m));
 

@@ -1,0 +1,62 @@
+a pc permission checker
+    -> checks a one period exception signal, if it's on then allow possible exception addr sets
+    -> checks a one period reset signal, if it's on then allow entrance into the reset region
+
+a mem permission checker/decoder
+    -> alligns addresses if valid
+    -> if reg write_m is on, and the alu_out_m is outside the bounds of the stack region, and rd_m == sp, then exception_invalid store
+    -> if reg write_m is on
+
+address mapping and signals testing code:
+
+0x0000_0000: lui x5,0x0004_0; 
+0x0000_0004: lw x6,0(x0)
+0x0000_0008: jalr x1, 0(x5);
+
+
+0x0004_0000: lui x5, 0x00080; 
+0x0004_0004: lui x6,0x00140
+0x0004_0008: lw x6,0(x6)
+0x0004_000c: jalr x1,0(x5); 
+
+
+0x0008_0000: lui x5,0x0010;
+0x0008_0004: lui x6,0x00180
+0x0008_0008: lw x6,0(x6)
+0x0008_000c: jalr x1,0(x5); 
+
+0x000a_0000: addi x0,x0,0;
+0x000a_0004: addi x0,x0,0;
+0x000a_0008: addi x0,x0,0;
+
+
+
+wire pc state = bit logic calculation 
+
+if an exception is detected in FETCH -> 
+load exception code[4:0] in if_id
+if(exception code[4] = 0 && 3:0 !=111)
+{
+    flush if_id,
+}
+-> in datapath, w_pc_trap_f = !exception code[4] && 3:0!=111
+    then assign pc_in =trap begin addr
+
+if an exception is detected in EX ->
+load exception code[4:0] in ex_mem
+if(exception code[4] = 1 && 3:0!=111)
+{
+    flush if_id, flush id_ex, flush ex_mem
+}
+-> in datapath, w_pc_trap_e = exception code[4] && 3:0!=111
+    then assign pc_in =trap begin addr
+
+
+TODO
+-> map initial pc to trap lo and sp to stack high
+-> think of a way to work out pc state to make it compatible with the exception handling module
+-> test all exception cases and see if they branch to trap_lo
+
+
+pc_in -> pc -> pc_out
+pc_in -> exc -> 
