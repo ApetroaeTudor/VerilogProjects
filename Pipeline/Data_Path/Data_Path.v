@@ -117,13 +117,46 @@ module Data_Path(
     wire [31:0] w_pc_p4_w;
     wire [1:0] w_result_src_w;
 
-    reg[1:0] r_pc_state = `PC_RESET_V;
+
+    wire w_pc_in_txt;
+    assign w_pc_in_txt = !w_pc_out_f[20] && w_pc_out_f[19] && !w_pc_out_f[18];
+
+
+
+    reg r_reset_permission = 1'b1;
+    reg r_trap_permission = 1'b0;
+
+    // ccN: PC_out_f (current PC) checked for exceptions
+	// 	- exception_code_f generated using past permissions.
+    // ccN+1: PC_trap_sel_f redirects PC_in_f if exception occurred.
+	//     - Permissions update based on exception_code_f from cycle N.
+
+
+    always @(posedge i_clk or posedge i_rst) 
+    begin
+        if (i_rst) begin
+            r_reset_permission <= 1'b1;
+            r_trap_permission  <= 1'b0;
+        end else if (i_clk_en) begin
+            if (r_reset_permission && w_pc_in_txt)
+                r_reset_permission <= 1'b0;
+            else if (i_rst)
+                r_reset_permission <= 1'b1;
+
+            if ((w_exception_code_e != `NO_E || w_exception_code_f != `NO_E) && !i_rst)
+                r_trap_permission <= 1'b1;
+            else if (w_pc_in_txt)
+                r_trap_permission <= 1'b0;
+        end
+    end
+
 
 
 
     Exception_Signals_Handler Exception_Signals_Handler_Inst(
-        .i_pc_state(r_pc_state),
-        .i_pc_f(w_pc_in_f),
+        .i_reset_permission(r_reset_permission),
+        .i_trap_permission(r_trap_permission),
+        .i_pc_f(w_pc_out_f),
         .i_opcode_f(w_instr_f[6:0]),
         .i_res_src_e(w_result_src_e),
         .i_reg_write_e(w_reg_write_e),
@@ -133,42 +166,6 @@ module Data_Path(
         .o_exception_code_f(w_exception_code_f),
         .o_exception_code_e(w_exception_code_e)
     );
-
-
-    // wire w_pc_reset_op;
-    // reg r_pc_last_reset;
-    // assign w_pc_reset_op = ((r_pc_state == `PC_RESET_V) && (!r_pc_last_reset))?1:0;
-
-    // wire w_pc_trap_op;
-    // reg r_pc_last_trap;
-    // assign w_pc_reset_op = ((r_pc_state == `PC_TRAP_V) && (!r_pc_last_trap))?1:0;
-
-    // // idk daca astea sunt ok
-    // always@(posedge i_clk)
-    // begin
-    //     if(i_rst)
-    //     begin
-    //         r_pc_state<=`PC_RESET_V;
-    //         r_pc_last_reset<=1'b1;
-    //         r_pc_last_trap<=1'b0;
-    //     end
-    //     else if(i_clk_en)
-    //     begin
-    //         if(w_exception_code_f[3:0]!=3'b111)
-    //         begin
-    //             r_pc_state<=`PC_TRAP_V;
-    //             r_pc_last_reset<=1'b0;
-    //             r_pc_last_trap<=1'b1;
-    //         end
-    //         else
-    //         begin
-    //             r_pc_state<=`PC_TXT;
-    //             r_pc_last_reset<=1'b0;
-    //             r_pc_last_trap<=1'b0;
-    //         end
-    //     end
-    // end
-
 
 
     // IF ------------------------------------------------------------

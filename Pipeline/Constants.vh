@@ -49,11 +49,6 @@
   `define IMM_J_TYPE 3'b011
   `define IMM_U_TYPE 3'b100
 
-// pc states
-  `define PC_TRAP_V 2'b00
-  `define PC_RESET_V 2'b01
-  `define PC_TXT 2'b10
-
 // exception codes
 
   `define E_FETCH_ADDR_MISALIGNED 4'b0000
