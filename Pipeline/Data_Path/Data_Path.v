@@ -1,3 +1,4 @@
+`default_nettype none
 `include "Constants.vh"
 module Data_Path(
     input i_clk,
@@ -48,9 +49,6 @@ module Data_Path(
     wire [31:0] w_pc_in_f;
     wire [31:0] w_pc_out_f;
     wire [31:0] w_pc_p4_f;
-    wire w_tv_en_f;
-    wire w_rv_en_f;
-    wire w_txt_en_f;
     wire [3:0] w_exception_code_f;
     wire w_pc_trap_sel_f;
 
@@ -71,6 +69,7 @@ module Data_Path(
     wire [4:0] w_rs2_e;
     wire [4:0] w_rd_e;
     wire [31:0] w_pc_p4_e;
+    wire [31:0] w_pc_e;
     wire [31:0] w_imm_32b_e;
     wire [31:0] w_regs_do1_e;
     wire [31:0] w_regs_do2_e;
@@ -89,6 +88,7 @@ module Data_Path(
     wire [1:0] w_pc_src_e;
     wire w_pc_trap_sel_e;
     wire [3:0] w_exception_code_e;
+    wire [31:0] w_pc_target_branch_or_jal_e;
 
 
     wire [31:0] w_alu_out_m;
@@ -100,9 +100,6 @@ module Data_Path(
     wire w_mem_write_m;
     wire [31:0] w_mem_out_m;
     wire [31:0] w_effective_addr_m;
-    wire w_glb_en_m;
-    wire w_stk_en_m;
-    wire w_io_en_m;
     wire w_dm_en_m;
     wire w_if_id_flush_exception_m;
     wire w_id_ex_flush_exception_m;
@@ -170,10 +167,6 @@ module Data_Path(
 
     // IF ------------------------------------------------------------
 
-    IF_Mem_Decoder IF_Mem_Decoder_Inst(.i_addr_f(w_pc_in_f),
-                                       .o_tv_en(w_tv_en_f),
-                                       .o_rv_en(w_rv_en_f),
-                                       .o_txt_en(w_txt_en_f));
 
     PC PC_Inst(.i_clk(i_clk),
                .i_clk_en(i_clk_en),
@@ -191,7 +184,7 @@ module Data_Path(
     (i_rst)?`RESET_LO:
     (w_pc_trap_sel_f || w_pc_trap_sel_e)?`TRAP_LO:
     (w_pc_src_e == 2'b00)?w_pc_p4_f: // pcp4;
-    (w_pc_src_e == 2'b01)?w_imm_32b_e: // imm
+    (w_pc_src_e == 2'b01)?w_pc_target_branch_or_jal_e: // imm // beq && jal
     (w_pc_src_e == 2'b10)?w_alu_out_e:32'b0; // rs1+imm
 
 
@@ -212,12 +205,14 @@ module Data_Path(
                      .i_if_id_flush(i_if_id_flush_h),
                      .i_instr_f(w_instr_f),
                      .i_pc_p4_f(w_pc_p4_f),
+                     .i_pc_f(w_pc_out_f),
                      .i_if_id_flush_exception_m(w_if_id_flush_exception_m),
 
                      .i_exception_code_f(w_exception_code_f),
 
                      .o_instr_d(w_instr_d),
-                     .o_pc_p4_d(w_pc_p4_d));
+                     .o_pc_p4_d(w_pc_p4_d),
+                     .o_pc_d(w_pc_d));
 
     // ID ------------------------------------------------------------
 
@@ -272,7 +267,9 @@ module Data_Path(
                      .i_alu_src_d(i_alu_src_d),
                      .i_opcode_d(w_instr_d[6:0]),
                      .i_id_ex_flush_exception_m(w_id_ex_flush_exception_m),
+                     .i_pc_d(w_pc_d),
                      
+                     .o_pc_e(w_pc_e),
                      .o_rs1_e(w_rs1_e),
                      .o_rs2_e(w_rs2_e),
                      .o_rd_e(w_rd_e),
@@ -294,6 +291,7 @@ module Data_Path(
 
     assign o_res_src_b0_e = w_result_src_e[0];
     assign o_pc_src_e = w_pc_src_e;
+    assign w_pc_target_branch_or_jal_e = w_pc_e + w_imm_32b_e;
 
     assign o_rs1_e = w_rs1_e;
     assign o_rs2_e = w_rs2_e;
@@ -308,8 +306,8 @@ module Data_Path(
 
 
     assign w_pc_src_e =
-    ((w_zero_e && w_branch_e) || (w_jmp_e && w_opcode_e == 7'b110_1111)) ? 2'b01:
-    (w_jmp_e && w_opcode_e == 7'b110_0111)?2'b10:
+    ((w_zero_e && w_branch_e) || (w_jmp_e && w_opcode_e == `OP_J_TYPE)) ? 2'b01:
+    (w_jmp_e && w_opcode_e == `OP_I_TYPE_JALR)?2'b10:
     2'b00; 
 
     assign w_pc_trap_sel_e =  (w_exception_code_e!=4'b1111)?1'b1:1'b0;
@@ -351,9 +349,6 @@ module Data_Path(
 
     Mem_Calculation_Unit Mem_Calculation_Unit_Inst(.i_addr_m(w_alu_out_m),
                                                    .o_effective_addr_m(w_effective_addr_m),
-                                                   .o_glb_en(w_glb_en_m),
-                                                   .o_stk_en(w_stk_en_m),
-                                                   .o_io_en(w_io_en_m),
                                                    .o_dm_en(w_dm_en_m));
 
     Mem_Data Mem_Data_Inst(.i_clk(i_clk),

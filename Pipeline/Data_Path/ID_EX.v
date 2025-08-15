@@ -12,6 +12,7 @@ module ID_EX(
     input [31:0] i_imm32_d,
     input [31:0] i_regs_do1_d,
     input [31:0] i_regs_do2_d,
+    input [31:0] i_pc_d,
 
     input i_reg_wr_d,
     input [1:0] i_result_src_d,
@@ -32,6 +33,7 @@ module ID_EX(
     output [31:0] o_imm32_e,
     output [31:0] o_regs_do1_e,
     output [31:0] o_regs_do2_e,
+    output [31:0] o_pc_e,
 
     output o_reg_wr_e,
     output [1:0] o_result_src_e,
@@ -44,6 +46,8 @@ module ID_EX(
 
 );
 
+    reg[31:0] r_pc_e;
+    assign o_pc_e = r_pc_e;
 
     reg [6:0] r_opcode_e;
     assign o_opcode_e = r_opcode_e;
@@ -102,6 +106,7 @@ module ID_EX(
             r_regs_do1_e <=0;
             r_regs_do2_e<=0;
             r_opcode_e<=0;
+            r_pc_e<=0;
 
             r_reg_wr_e<=0;
             r_result_src_e<=0;
@@ -121,6 +126,7 @@ module ID_EX(
             r_regs_do1_e <=i_regs_do1_d;
             r_regs_do2_e<=i_regs_do2_d;
             r_opcode_e<=i_opcode_d;
+            r_pc_e<=i_pc_d;
 
             r_reg_wr_e<=i_reg_wr_d;
             r_result_src_e<=i_result_src_d;

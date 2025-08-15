@@ -29,6 +29,18 @@
   `define IO_LO 32'h0018_0000
   `define IO_HI 32'h001f_ffff
 
+
+  `define TV_EN = !addr_f[20] && !addr_f[19] && !addr_f[18]
+  `define RV_EN = !addr_f[20] && !addr_f[19] && addr_f[18]
+  `define TXT_EN = !addr_f[20] && addr_f[18] && !addr_f[18]
+
+  `define GLB_EN = addr_m[20] && !addr_m[19] && !addr_m[18]
+  `define STK_EN = addr_m[20] && !addr_m[19] && addr_m[18]
+  `define IO_EN = addr_m[20] && addr_m[19]
+
+
+  
+
 // alu control
   `define ALU_OP_ADD 2'b00
   `define ALU_OP_SUB 2'b01
@@ -96,6 +108,9 @@
   `define t4 5'b111_01 //x29
   `define t5 5'b111_10 //x30
   `define t6 5'b111_11 //x31
+
+
+
 
 
 

@@ -41,7 +41,7 @@ assign o_exception_code_f =
       i_opcode_f!=`OP_J_TYPE                         &&
       i_opcode_f!=`OP_B_TYPE_BEQ                     &&
       i_opcode_f!=`OP_U_TYPE                         &&
-      i_opcode_f!=`OP_NOP                            &&
+      i_opcode_f!=`OP_NOP                            ||
       (!i_trap_permission && (i_opcode_f == `OP_I_TYPE_CSR)  ) || // invalid opcode
       (i_pc_f[20])                                                    || // pc access outside the instruction mem
       (!i_trap_permission  && w_tv_en)     ||
@@ -57,12 +57,12 @@ assign o_exception_code_f =
         !i_alu_out_e[18])       &&
        i_rd_e == `sp          // the destination is the stack pointer reg
        )?`E_SP_OUT_OF_RANGE:
-
     ( i_res_src_e == 2'b01 &&
       i_alu_out_e[1:0]!=2'b00)?`E_LOAD_ADDR_MISALIGNED:
 
     ( i_res_src_e == 2'b01 &&
       !i_alu_out_e[20] )?`E_LOAD_ACCESS_FAULT:
+
 
     ( i_mem_write_e &&
       i_alu_out_e[1:0]!=2'b00)?`E_STORE_ADDR_MISALIGNED:

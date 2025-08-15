@@ -11,12 +11,15 @@ module IF_ID(
     input [31:0] i_instr_f,
     input [31:0] i_pc_p4_f,
     input [3:0] i_exception_code_f,
+    input [31:0] i_pc_f,
 
+    output [31:0] o_pc_d,
     output [31:0] o_instr_d,
     output [31:0] o_pc_p4_d
 
 );
-
+    reg [31:0] r_pc_d;
+    assign o_pc_d = r_pc_d;
     reg [31:0] r_instr;
     assign o_instr_d = r_instr;
     reg [31:0] r_pc_p4;
@@ -28,6 +31,7 @@ module IF_ID(
         begin // if the exception code for a fetch exception then flush
             r_instr<=0;
             r_pc_p4<=0;
+            r_pc_d<=0;
         end
         else
         begin
@@ -35,6 +39,7 @@ module IF_ID(
             begin
                 r_instr<=i_instr_f;
                 r_pc_p4<=i_pc_p4_f;
+                r_pc_d<=i_pc_f;
             end
         end
     end
