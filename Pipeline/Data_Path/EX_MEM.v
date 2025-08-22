@@ -14,6 +14,15 @@ module EX_MEM(
     input i_mem_write_e,
     input [3:0] i_exception_code_e,
 
+    input i_csr_reg_write_e,
+    input [31:0] i_new_csr_e,
+    input [31:0] i_old_csr_e,
+    input [11:0] i_csr_rd_e,
+
+    input [6:0] i_opcode_e,
+    input [2:0] i_f3_e,
+    input [11:0] i_imm_12b_e,
+
     output o_if_id_flush_exception_m,
     output o_id_ex_flush_exception_m,
 
@@ -23,7 +32,16 @@ module EX_MEM(
     output [31:0] o_pc_p4_m,
     output o_reg_wr_m,
     output [1:0] o_result_src_m,
-    output o_mem_write_m
+    output o_mem_write_m,
+
+    output [6:0] o_opcode_m,
+    output [2:0] o_f3_m,
+    output [11:0] o_imm_12b_m,
+
+    output o_csr_reg_write_m,
+    output [31:0] o_new_csr_m,
+    output [31:0] o_old_csr_m,
+    output [11:0] o_csr_rd_m
 );
 
 
@@ -36,6 +54,28 @@ module EX_MEM(
 
     assign o_if_id_flush_exception_m = w_exception_ex_stage;
     assign o_id_ex_flush_exception_m = w_exception_ex_stage;
+
+    reg [6:0] r_opcode_e;
+    assign o_opcode_m = r_opcode_e;
+
+    reg [2:0] r_f3_e;
+    assign o_f3_m = r_f3_e;
+
+    reg [11:0] r_imm_12b_e;
+    assign o_imm_12b_m = r_imm_12b_e;
+
+
+    reg r_csr_reg_write_e;
+    assign o_csr_reg_write_m = r_csr_reg_write_e;
+
+    reg [31:0] r_new_csr_e;
+    assign o_new_csr_m = r_new_csr_e;
+
+    reg [31:0] r_old_csr_e;
+    assign o_old_csr_m = r_old_csr_e;
+
+    reg [11:0] r_csr_rd_e;
+    assign o_csr_rd_m = r_csr_rd_e;
 
     reg [4:0] r_rd_e;
     assign o_rd_m = r_rd_e;
@@ -69,6 +109,16 @@ module EX_MEM(
             r_reg_wr_e<=0;
             r_result_src_e<=0;
             r_mem_write_e<=0;
+
+            r_csr_reg_write_e<=0;
+            r_new_csr_e<=0;
+            r_old_csr_e<=0;
+            r_csr_rd_e<=0;
+
+            r_opcode_e<=0;
+            r_f3_e<=0;
+            r_imm_12b_e<=0;
+
         end
         else if(i_clk_en)
         begin
@@ -79,6 +129,15 @@ module EX_MEM(
             r_reg_wr_e<=i_reg_wr_e;
             r_result_src_e<=i_result_src_e;
             r_mem_write_e<=i_mem_write_e;
+
+            r_csr_reg_write_e<=i_csr_reg_write_e;
+            r_new_csr_e<=i_new_csr_e;
+            r_old_csr_e<=i_old_csr_e;
+            r_csr_rd_e<=i_csr_rd_e;
+
+            r_opcode_e<=i_opcode_e;
+            r_f3_e<=i_f3_e;
+            r_imm_12b_e<=i_imm_12b_e;
         end
     end
 

@@ -17,7 +17,7 @@ module Mem_Instr(
         begin
             r_mem_instr[i] = 8'h00;
         end
-        $readmemh("./Mem_Files/RESET_VECTOR_TEST.mem",r_mem_instr);
+        $readmemh("./Mem_Files/TRAP_VECTOR_TEST.mem",r_mem_instr);
     end
 
 

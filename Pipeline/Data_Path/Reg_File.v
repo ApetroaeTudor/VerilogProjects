@@ -3,6 +3,7 @@ module Reg_File(
     input i_clk_enable,
     input i_rst,
     input i_reg_write,
+    input i_csr_reg_write,
 
     input [4:0] i_rd_addr_1,
     input [4:0] i_rd_addr_2,
@@ -58,7 +59,7 @@ module Reg_File(
         end
         else if(i_clk_enable)
         begin
-            if(i_reg_write)
+            if(i_reg_write || i_csr_reg_write)
             begin
                 if(i_wr_addr!=0) 
                 r_registers[i_wr_addr] <= i_wr_data;

@@ -53,21 +53,72 @@ if(exception code[4] = 1 && 3:0!=111)
 
 
 TODO
--> test all exception cases and see if they branch to trap_lo
-    -> in reset vector, a broken opcode               --- addi x5,x0,2 = 0x00200293 ->> 0x00200ff - done
-    -> in reset vector, a jump to a broken addr       --- addi x5,x0,0; lui x5, 0x00040; addi x5,x5,3; jalr x1,0(x5); - done
-    -> in reset vector, a jump to trap v              --- jalr x0,0x10(x0) - done
-    -> in reset vector, a lw that points to instr mem --- addi x5,x0,0; lui x5,0x00081; lw x6,0(x5); - done
-    -> in reset vector, a lw that has a broken addr   --- addi x5,x0,0x00100; addi x5,x5,1; lw x6,0(x5); - done
-    -> same with sw                                   --- addi x6,x0,123; addi x5,x0,0; lui x5,0x00081; sw x6,0(x5);
-                                                      --- addi x6,x0,123; addi x5,x0,0x00100; addi x5,x5,1; sw x6,0(x5);
+-> see what is modified by hardware when switching into and out of the trap vector
+        -> IN: mepc <= current pc
+               mie  <= 32'b0;
+               mcause <= exception code // bit 31 = 1 for interrupt, 0 for exception
+               mtval <= relevant exception data
 
 
-    -> same but in text:
-        -> also a jump in reset
+        -> OUT: mie <= default mie cst
+                pc <= mepc
+                ** if machine mode is entered and immediately left after an IF detected exception, a bubble needs to be inserted in order to delay the imm into ID
 
--> make a list of the needed csr instructions
--> write the trap vector assembly (with special csr instructions)
--> create encodings for the special csr instructions i want to implement and implement them
+
+    // on detecting an exception in f or in e, a prioritary csr write signal is emitted in order
+    // to write relevant data in the csr reg file
+
+    // if the exception is generated in f, then the data will be written in d,
+    // if the exception is generated in ex, then the data will be written in mem         
+
+-> list of csr instructions
+-> list of exception codes and solving solutions
+-> ecall functionality
+
+** global initialized data must go into rom (the sidata = start of initial data).
+    -> in the reset vector the initialized data must be copied into ram into sdata
+
+Exceptions:
+1. E_FETCH_ADDR_MISALIGNED 4'b0000
+    -> mtval = pc_addr
+    -> solution -> terminate program
+
+2. E_ILLEGAL_INSTR 4'b0010
+    -> mtval = faulty instr
+    -> solution -> terminate
+
+3. E_SP_OUT_OF_RANGE 4'b0011
+    -> mtval = faulty sp generated in ex
+    -> solution -> terminate program
+    
+4. E_LOAD_ADDR_MISALIGNED 4'b0100
+    -> mtval = faulty addr
+    -> solution -> terminate program
+
+5. E_LOAD_ACCESS_FAULT 4'b0101
+    -> mtval = faulty addr
+    -> solution -> terminate
+
+6. E_STORE_ADDR_MISALIGNED 4'b0110
+    -> mtval = faulty addr
+    -> solution -> terminate
+
+7. E_STORE_ADDR_FAULT 4'b0111
+    -> mtval = faulty addr
+    -> solution -> terminate
+
+8. E_ECALL 4'b1000
+    -> mtval = 0
+    -> solution: query the a7 register -> 0 = exit with the code in a0
+                                       -> 1 = uart print char with the char in a0 (lsb)
+    -> mret -> mepc+=4
+                    
+
+
+
+todo:   -> write physical memory protection unit with pmpcfg registers that hold the memory region limits
+            -> these are initialized in the reset vector
+        
+        -> write the trap vector assembly (with special csr instructions)
 
 

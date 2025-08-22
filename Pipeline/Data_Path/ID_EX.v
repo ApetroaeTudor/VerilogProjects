@@ -23,8 +23,18 @@ module ID_EX(
     input i_alu_src_d,
 
     input [6:0] i_opcode_d,
+    input i_csr_reg_write_d,
+    input [31:0] i_new_csr_d,
+    input [31:0] i_old_csr_d,
+    input [11:0] i_csr_rd_d,
+    input i_ecall_d,
+    input i_mret_d,
+    input [2:0] i_f3_d,
+    input [11:0] i_imm_12b_d,
 
     input i_id_ex_flush_exception_m,
+    input [31:0] i_mepc_d,
+
     
     output [4:0] o_rs1_e,
     output [4:0] o_rs2_e,
@@ -34,6 +44,9 @@ module ID_EX(
     output [31:0] o_regs_do1_e,
     output [31:0] o_regs_do2_e,
     output [31:0] o_pc_e,
+    output [31:0] o_mepc_e,
+    output [2:0] o_f3_e,
+    output [11:0] o_imm_12b_e,
 
     output o_reg_wr_e,
     output [1:0] o_result_src_e,
@@ -42,9 +55,47 @@ module ID_EX(
     output o_branch_e,
     output [2:0] o_alu_ctl_e,
     output o_alu_src_e,
-    output [6:0] o_opcode_e
+    output [6:0] o_opcode_e,
+    
+    output o_csr_reg_write_e,
+    output [31:0] o_new_csr_e,
+    output [31:0] o_old_csr_e,
+    output [11:0] o_csr_rd_e,
+    output o_ecall_e,
+    output o_mret_e
 
 );
+
+    wire w_id_ex_final_flush;
+    assign w_id_ex_final_flush = i_id_ex_flush || i_id_ex_flush_exception_m;
+
+    reg [2:0] r_f3_e;
+    assign o_f3_e = r_f3_e;
+
+    reg [11:0] r_imm_12b_e;
+    assign o_imm_12b_e = r_imm_12b_e;
+
+    reg [31:0] r_new_csr_e;
+    assign o_new_csr_e = r_new_csr_e;
+
+    reg [31:0] r_mepc_e;
+    assign o_mepc_e = r_mepc_e;
+
+    reg [31:0] r_old_csr_e;
+    assign o_old_csr_e = r_old_csr_e;
+
+    reg [11:0] r_csr_rd_e;
+    assign o_csr_rd_e = r_csr_rd_e;
+
+    reg r_ecall_e;
+    assign o_ecall_e = r_ecall_e;
+
+    reg r_mret_e;
+    assign o_mret_e = r_mret_e;
+
+
+    reg r_csr_reg_write_e;
+    assign o_csr_reg_write_e = r_csr_reg_write_e;
 
     reg[31:0] r_pc_e;
     assign o_pc_e = r_pc_e;
@@ -96,7 +147,7 @@ module ID_EX(
 
     always@(posedge i_clk)
     begin
-        if(i_rst || i_id_ex_flush || i_id_ex_flush_exception_m)
+        if(i_rst || w_id_ex_final_flush)
         begin
             r_rs1_e <=0;
             r_rs2_e <=0;
@@ -107,6 +158,15 @@ module ID_EX(
             r_regs_do2_e<=0;
             r_opcode_e<=0;
             r_pc_e<=0;
+
+            r_csr_reg_write_e<=0;
+            r_new_csr_e<=0;
+            r_old_csr_e<=0;
+            r_ecall_e<=0;
+            r_mret_e<=0;
+            r_mepc_e<=0;
+            r_f3_e<=0;
+            r_imm_12b_e<=0;
 
             r_reg_wr_e<=0;
             r_result_src_e<=0;
@@ -127,6 +187,16 @@ module ID_EX(
             r_regs_do2_e<=i_regs_do2_d;
             r_opcode_e<=i_opcode_d;
             r_pc_e<=i_pc_d;
+
+            r_csr_reg_write_e<=i_csr_reg_write_d;
+            r_new_csr_e<=i_new_csr_d;
+            r_old_csr_e<=i_old_csr_d;
+            r_csr_rd_e<=i_csr_rd_d;
+            r_ecall_e<=i_ecall_d;
+            r_mret_e<=i_mret_d;
+            r_mepc_e<=i_mepc_d;
+            r_f3_e<=i_f3_d;
+            r_imm_12b_e<=i_imm_12b_d;
 
             r_reg_wr_e<=i_reg_wr_d;
             r_result_src_e<=i_result_src_d;

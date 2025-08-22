@@ -26,17 +26,20 @@
   `define STACK_LO 32'h0014_0000
   `define STACK_HI 32'h0017_ffff
 
-  `define IO_LO 32'h0018_0000
+  `define CSR_STACK_LO 32'h0018_0000
+  `define CSR_STACK_HI 32'h001b_ffff
+
+  `define IO_LO 32'h001c_0000
   `define IO_HI 32'h001f_ffff
 
+  `define TV_EN !addr_f[20] && !addr_f[19] && !addr_f[18]
+  `define RV_EN !addr_f[20] && !addr_f[19] && addr_f[18]
+  `define TXT_EN !addr_f[20] && addr_f[19] && !addr_f[18]
 
-  `define TV_EN = !addr_f[20] && !addr_f[19] && !addr_f[18]
-  `define RV_EN = !addr_f[20] && !addr_f[19] && addr_f[18]
-  `define TXT_EN = !addr_f[20] && addr_f[18] && !addr_f[18]
-
-  `define GLB_EN = addr_m[20] && !addr_m[19] && !addr_m[18]
-  `define STK_EN = addr_m[20] && !addr_m[19] && addr_m[18]
-  `define IO_EN = addr_m[20] && addr_m[19]
+  `define GLB_EN addr_m[20] && !addr_m[19] && !addr_m[18]
+  `define STK_EN addr_m[20] && !addr_m[19] && addr_m[18]
+  `define CSR_STK_EN addr_m[20] && addr_m[19] && !addr_m[18]
+  `define IO_EN addr_m[20] && addr_m[19] && addr_m[18]
 
 
   
@@ -74,6 +77,27 @@
 
   `define E_ECALL 4'b1000 
   `define NO_E 4'b1111
+
+
+  `define CSR_CONTROL_F3 3'b000
+  `define CSR_CSRRW_F3 3'b001
+  `define CSR_CSRRS_F3 3'b010
+  `define CSR_CSRRC_F3 3'b011
+
+  `define CSR_IMM_ECALL  12'd0
+  `define CSR_IMM_MRET  12'd770 // rs1 and rd must also be 0;
+
+// csr machine registers
+  `define mstatus_lower 12'h300
+  `define mie 12'h304
+  `define mtvec 12'h305
+  `define mstatus_upper 12'h310
+  `define mscratch 12'h340
+  `define mepc 12'h341
+  `define mcause 12'h342
+  `define mtval 12'h343
+
+  `define mie_DEFAULT_VALUE 32'b0000_0000_0000_0000_0000_0000_1000_0010
 
 // registers
   `define zero 5'b000_00 //x0
