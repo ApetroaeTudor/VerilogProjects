@@ -13,39 +13,39 @@ MEMORY
     IO          (rwx) : ORIGIN = 0x001c0000, LENGTH = 256K
 }
 
+_txt_start = ORIGIN(TEXT);
+
 _stack_top = ORIGIN(STACK) + LENGTH(STACK);
 _csr_stack_top = ORIGIN(CSR_STACK) + LENGTH(CSR_STACK);
 
 SECTIONS
 {
-    /*ROM*/
 
-    .trap_vector:
+    .trap_vector :
     {
         . = ALIGN(4);
         KEEP(*(.trap_vector))
     } > TRAP_VEC
 
-    .reset_vector:
+    .reset_vector :
     {
         . = ALIGN(4);
         KEEP(*(.reset_vector))
     } > RESET_VEC
 
-    .text:
+    .text_segm :
     {
         . = ALIGN(4);
         *(.text .text.*)
         *(.rodata .rodata.*)
     } > TEXT
 
-    _sidata = LOADADDR(.text) + SIZEOF(.text); 
+    _sidata = LOADADDR(.text_segm) + SIZEOF(.text_segm); 
 
 
-    /*RAM*/
 
     /* initially flashed data is put into rom, and then in the reset vector copied into ram*/
-    .data: AT (_sidata)
+    .data : AT (_sidata)
     {
         . = ALIGN(4);
         _sdata = .;
@@ -53,7 +53,7 @@ SECTIONS
         _edata = .;
     } > GLOBAL_DATA
 
-    .bss: AT(_sidata)
+    .bss : AT(_sidata)
     {
         . = ALIGN(4);
         _sbss = .;
@@ -62,7 +62,7 @@ SECTIONS
         _ebss = .;
     } > GLOBAL_DATA
 
-    .io:
+    .io :
     {
         . = ALIGN(4);
         _sio = .;

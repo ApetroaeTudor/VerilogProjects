@@ -56,11 +56,11 @@ module Hazard_Unit(
     output o_pc_stall //
 );
 
-    assign o_fw_csr_into_normal_a_e = ((i_opcode_m==`OP_I_TYPE_CSR && i_f3_m!=`CSR_CONTROL_F3) && (i_rd_m == i_rs1_e) ) ? 2'b01:
-                                      ((i_opcode_w==`OP_I_TYPE_CSR && i_f3_w!=`CSR_CONTROL_F3) && (i_rd_wb == i_rs1_e)) ? 2'b10:2'b00;
+    assign o_fw_csr_into_normal_a_e = ((i_opcode_m==`OP_I_TYPE_CSR && i_f3_m!=`CSR_CONTROL_F3) && (i_rd_m == i_rs1_e) && i_rd_m!=0 && i_rs1_e!=0 ) ? 2'b01:
+                                      ((i_opcode_w==`OP_I_TYPE_CSR && i_f3_w!=`CSR_CONTROL_F3) && (i_rd_wb == i_rs1_e) && i_rd_wb!=0 && i_rs1_e!=0) ? 2'b10:2'b00;
 
-    assign o_fw_csr_into_normal_b_e = ((i_opcode_m==`OP_I_TYPE_CSR && i_f3_m!=`CSR_CONTROL_F3) && (i_rd_m == i_rs2_e) ) ? 2'b01:
-                                      ((i_opcode_w==`OP_I_TYPE_CSR && i_f3_w!=`CSR_CONTROL_F3) && (i_rd_wb == i_rs2_e)) ? 2'b10:2'b00;
+    assign o_fw_csr_into_normal_b_e = ((i_opcode_m==`OP_I_TYPE_CSR && i_f3_m!=`CSR_CONTROL_F3) && (i_rd_m == i_rs2_e) && i_rd_m!=0 && i_rs2_e!=0) ? 2'b01:
+                                      ((i_opcode_w==`OP_I_TYPE_CSR && i_f3_w!=`CSR_CONTROL_F3) && (i_rd_wb == i_rs2_e) && i_rd_wb!=0 && i_rs2_e!=0) ? 2'b10:2'b00;
     // additional forwards
         // if instr_m is csr and the rd in mem == rs1 in ex -> then rs1_data_ex = old_csr_mem
         // if instr_w is csr and the rd in wb == rs1 in ex -> then rs1_data_ex = old_csr_wb 
@@ -68,11 +68,11 @@ module Hazard_Unit(
 
     
     assign o_fw_normal_into_csr_d = ((i_opcode_d==`OP_I_TYPE_CSR && i_f3_d!=`CSR_CONTROL_F3) && (i_opcode_e!=`OP_I_TYPE_CSR) &&
-                                    (i_rd_e == i_rs1_d))?2'b01:
+                                    (i_rd_e == i_rs1_d) && i_rd_e!=0 && i_rs1_d!=0)?2'b01:
                                     ((i_opcode_d==`OP_I_TYPE_CSR && i_f3_d!=`CSR_CONTROL_F3) && (i_opcode_m!=`OP_I_TYPE_CSR) &&
-                                    (i_rd_m == i_rs1_d))?2'b10:
+                                    (i_rd_m == i_rs1_d) && i_rd_m!=0 && i_rs1_d!=0)?2'b10:
                                     ((i_opcode_d==`OP_I_TYPE_CSR && i_f3_d!=`CSR_CONTROL_F3) && (i_opcode_w!=`OP_I_TYPE_CSR) &&
-                                    (i_rd_wb == i_rs1_d))?2'b11:2'b00;
+                                    (i_rd_wb == i_rs1_d) && i_rd_wb!=0 && i_rs1_d!=0)?2'b11:2'b00;
         // if instr in ID is csr and instr in EX is NOT csr, and rd_ex == rs1_d -> rs1_data_d = alu_out_ex 
         // if instr in ID is csr and instr in MEM is NOT csr, and rd_mem == rs1_d -> rs1_data_d = alu_out_mem
         // if instr in ID is csr and instr in WB is NOT csr, and rd_wb == rs1_d -> rs1_data_d = res_wb
@@ -80,11 +80,11 @@ module Hazard_Unit(
 
     
     assign o_fw_csr_csr_reg_d = ((i_opcode_e == `OP_I_TYPE_CSR && i_f3_e!=`CSR_CONTROL_F3) && (i_opcode_d == `OP_I_TYPE_CSR && i_f3_d!=`CSR_CONTROL_F3) &&
-                                (i_rs1_d == i_rd_e))?2'b01:
+                                (i_rs1_d == i_rd_e) && i_rd_e!=0 && i_rs1_d!=0)?2'b01:
                                 ((i_opcode_m == `OP_I_TYPE_CSR && i_f3_m!=`CSR_CONTROL_F3) && (i_opcode_d == `OP_I_TYPE_CSR && i_f3_d!=`CSR_CONTROL_F3) &&
-                                (i_rs1_d == i_rd_m))?2'b10:
+                                (i_rs1_d == i_rd_m) && i_rd_m!=0 && i_rs1_d!=0)?2'b10:
                                 ((i_opcode_w == `OP_I_TYPE_CSR && i_f3_w!=`CSR_CONTROL_F3) && (i_opcode_d == `OP_I_TYPE_CSR && i_f3_d!=`CSR_CONTROL_F3) &&
-                                (i_rs1_d == i_rd_wb))?2'b11:2'b00;
+                                (i_rs1_d == i_rd_wb) && i_rd_wb!=0 && i_rs1_d!=0)?2'b11:2'b00;
         // if instr in EX is csr and instr in ID is csr, and ID_rs1 == EX_rd -> rs1_data_d = old_csr_e
         // if instr in MEM is csr and instr in ID is csr, and ID_rs1 == MEM_rd -> rs1_data_d = old_csr_m
         // if instr in WB is csr and instr in ID is csr, and ID_rs1 == WB_rd -> rs1_data_d = old_csr_wb
@@ -132,8 +132,10 @@ module Hazard_Unit(
 
     wire w_lw_stall;
     assign w_lw_stall =
-    (i_res_src_b0_e && ((i_rs1_d == i_rd_e) ||
-                        (i_rs2_d == i_rd_e)))?1'b1:1'b0;
+    (i_res_src_b0_e && 
+    i_rd_e!=0 && 
+    ((i_rs1_d == i_rd_e && i_rs1_d!=0) ||
+    (i_rs2_d == i_rd_e  && i_rs2_d!=0)))?1'b1:1'b0;
     assign o_if_id_stall = w_lw_stall;
     assign o_pc_stall = w_lw_stall;
 

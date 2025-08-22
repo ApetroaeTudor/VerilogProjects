@@ -1,20 +1,8 @@
-/* --- Reset Vector ---
- * We place the startup code in its own section, which the linker script
- * will map to the RESET_VEC memory region. "ax" means allocatable and executable.
- */
 .section .reset_vector, "ax"
 .global _start
 
 _start:
-    # 1. Initialize the main Stack Pointer (sp).
-    # The stack grows downwards, so we point to the top of the STACK region.
     la sp, _stack_top
-
-    # 2. (Optional) Initialize the CSR Stack Pointer if needed.
-    # This would typically be for a separate stack for machine-mode handlers.
-    # la tp, _csr_stack_top # Using 'tp' as an example for a second stack pointer
-
-    # 3. Copy initialized data from ROM (.sidata) to RAM (.sdata).
     la a0, _sidata  # a0 = Source address in ROM
     la a1, _sdata   # a1 = Destination address in RAM
     la a2, _edata   # a2 = End address in RAM
