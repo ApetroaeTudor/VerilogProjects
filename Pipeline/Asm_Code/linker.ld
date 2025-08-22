@@ -62,6 +62,12 @@ SECTIONS
         _ebss = .;
     } > GLOBAL_DATA
 
+    .io:
+    {
+        . = ALIGN(4);
+        _sio = .;
+    } > IO
+
         
     /DISCARD/ : { *(.comment) *(.note) }
 }
